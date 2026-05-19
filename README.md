@@ -1,7 +1,7 @@
 # UE5_Entity_Stress_Optimizer
 基于 Unreal Engine 5 的海量实体极限性能压测与底层调度系统
 
-> **演示视频**: <img width="1216" height="988" alt="图片" src="https://github.com/user-attachments/assets/2d133c96-b946-402e-957a-06829cff4015" />
+> **演示视频**: ![演示视屏截图](images/game_screenshots.jpg)
 
 https://www.bilibili.com/video/BV1ZGLK6pEVZ/
 
@@ -30,7 +30,7 @@ https://www.bilibili.com/video/BV1ZGLK6pEVZ/
 * **压测基准**: 开启完整碰撞、血量计算与移动逻辑。
 * **优化成果**: 在同屏 400 实体规模下，稳态帧率由 **10 FPS** 跃升至稳定 **45-50 FPS**。
 
-*<img width="1600" height="960" alt="Code_Generated_Image" src="https://github.com/user-attachments/assets/647c2eff-44ef-4209-a9c9-58d46d649722" />
+*![实时帧率分析](images/FPS_analyze.jpg)
 
 ## 📁 核心源码展示 (本项目仅展示核心机制逻辑)
 * `ObjectPoolManager`：内存复用管理系统。
@@ -38,3 +38,13 @@ https://www.bilibili.com/video/BV1ZGLK6pEVZ/
 * `BTTask_PrepareCharge`：基于 C++ 与黑板数据的高速冲锋行为树节点。
 
 ![Boss冲锋行为树逻辑](images/BT_Boss.jpg)
+核心机制：C++ 与黑板数据驱动的混合 AI 架构
+摒弃了纯蓝图连线造成的“面条代码 (Spaghetti Code)”。将底层的距离运算、向量推导与物理组件接管交由 C++ 节点 (BTTask_PrepareCharge) 处理；而蓝图层仅作为状态机控制流 (Selector/Sequence) 与黑板数据 (Blackboard) 的可视化配置面板。实现了程序逻辑与策划层面的完美解耦，极大提升了 AI 迭代效率。
+
+![GameMode 刷怪计时器](images/BP_SpawnBoss.jpg)
+核心机制：基于 Timer 的无阻塞生命周期控制
+在 GameMode 层面统筹宏观游戏节奏。利用引擎底层的定时器 (Timer) 替代全局 Tick 进行低开销的挂起与唤醒，结合安全的实体唯一性校验，确保全局生成管线的高效流转与内存防溢出。
+
+![血条广播与击杀掉落](images/BP_BossHealthBar.jpg)
+核心机制：基于多播委托 (Multicast Delegate) 的异步事件通信
+严格遵循 UI 性能规范，坚决摒弃 Event Tick 轮询读值。血条刷新、飘字反馈与战利品掉落逻辑，全部通过动态绑定底层的 OnHealthChanged C++ 委托来实现。仅在状态发生突变时由事件驱动触发 (Event-Driven)，彻底消除了 UI 蓝图与业务逻辑层的无效 Tick 开销。
